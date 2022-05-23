@@ -103,4 +103,14 @@ app.put("/api/taches/:id", [verifyId], async (req, res) => {
   }
 });
 
+/**
+ * Suppression d'une tâche
+ */
+app.delete("/api/taches/:id", [verifyId], async (req, res) => {
+  const id = req.params.id;
+  const tache = await Tache.findByIdAndDelete(id);
+
+  res.status(200).json(tache);
+});
+
 module.exports = app;
