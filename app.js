@@ -1,5 +1,6 @@
 // Validation
 const joi = require("joi");
+const ObjectID = require("mongoose").Types.ObjectId;
 
 // Express
 const express = require("express");
@@ -8,8 +9,28 @@ const app = express();
 // Base de données
 const { Tache } = require("./Datatable");
 
+// Middleware
+
 // On va avoir besoin de parser le json entrant dans req.body
 app.use(express.json());
+
+const verifyId = async (req, res, next) => {
+  const params = req.params;
+  let id = params.id;
+
+  // Vérification
+  if (ObjectID.isValid(id)) {
+    const user = await Tache.findById(id);
+
+    if (user) next();
+    else res.status(400).json({ error: "Id must exists !" });
+  }
+
+  // Sinon
+  else {
+    res.status(400).json({ error: "Id must exists !" });
+  }
+};
 
 // ROUTES
 
@@ -19,6 +40,14 @@ app.use(express.json());
 app.get("/api/taches", async (req, res) => {
   const taches = await Tache.find({});
   res.status(200).json(taches);
+});
+
+/**
+ * Détailler une tâche
+ */
+app.get("/api/taches/:id", [verifyId], async (req, res) => {
+  const tache = await Tache.findById(req.params.id);
+  res.status(200).json(tache);
 });
 
 /**
