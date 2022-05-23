@@ -8,10 +8,6 @@ mongoose
   .catch((err) => console.error("Failed to connect to mongo, ", err));
 
 const tacheSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-  },
   description: {
     type: String,
     required: true,
