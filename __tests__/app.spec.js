@@ -14,4 +14,34 @@ describe("API CRUD /api/taches", () => {
     const taches = JSON.parse(JSON.stringify(await Tache.find({})));
     expect(JSON.parse(res.text)).toMatchObject(taches);
   });
+
+  test("POST /api/taches - Ajoute une tache dans la base de données et renvoie 201", async () => {
+    const tache = {
+      description: "description test",
+      faite: true,
+    };
+
+    const res = await request(app)
+      .post("/api/taches")
+      .send(tache)
+      .expect(201)
+      .expect("content-type", /json/);
+
+    expect(JSON.parse(res.text)).toMatchObject(tache);
+  });
+
+  test.each([
+    { description: "bla" },
+    { faite: false },
+    { description: "bla", faite: false },
+  ])(
+    "POST /api/taches - Ajoute une tache avec des données invalided et renvoie erreur 400 -> %p",
+    async (tache) => {
+      const res = await request(app)
+        .post("/api/taches")
+        .send(tache)
+        .expect(400)
+        .expect("content-type", /json/);
+    }
+  );
 });
