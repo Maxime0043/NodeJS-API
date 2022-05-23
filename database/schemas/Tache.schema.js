@@ -9,4 +9,8 @@ module.exports.TacheSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  creeePar: {
+    type: mongoose.Schema.ObjectId,
+    required: true,
+  },
 });
