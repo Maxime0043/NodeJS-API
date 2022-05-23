@@ -13,4 +13,12 @@ app.use(express.json());
 
 // ROUTES
 
+/**
+ * Lister toutes les tâches
+ */
+app.get("/api/taches", async (req, res) => {
+  const taches = await Tache.find({});
+  res.status(200).json(taches);
+});
+
 module.exports = app;
