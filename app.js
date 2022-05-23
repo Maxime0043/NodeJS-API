@@ -49,6 +49,39 @@ const verifyId = async (req, res, next) => {
 // ROUTES
 
 /**
+ * Inscription d'un utilisateur
+ */
+app.post("/signup", async (req, res) => {
+  const payload = req.body;
+  const schema = joi.object({
+    username: joi.string().min(3).max(50).required(),
+    email: joi.string().max(255).required().email(),
+    password: joi.string().min(3).max(50).required(),
+  });
+
+  const { value: account, error } = schema.validate(payload);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  // Avant d'inscrire on vérifie que le compte est unique
+  const found = await User.findOne({ email: account.email });
+  if (found) return res.status(400).send("Please signin instead of signup !");
+
+  // Hachage du mot de passe
+  const salt = await bcrypt.genSalt(10);
+  const passwordHashed = await bcrypt.hash(account.password, salt);
+  account.password = passwordHashed;
+
+  // Création du nouvel utilisateur
+  const newUser = new User(account);
+  newUser.save().then((account) => {
+    res.status(201).json({
+      username: account.name,
+      email: account.email,
+    });
+  });
+});
+
+/**
  * Lister toutes les tâches
  */
 app.get("/api/taches", async (req, res) => {
