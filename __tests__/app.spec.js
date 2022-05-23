@@ -1,4 +1,6 @@
+const bcrypt = require("bcrypt");
 const request = require("supertest");
+require("express-async-errors"); // bcrypt est asynchrone
 const app = require("../app");
 const { Tache } = require("../database/models/Tache.model");
 const { User } = require("../database/models/User.model");
@@ -139,5 +141,33 @@ describe("Comptes utilisateur", () => {
     expect(resEmail).toBe(user.email);
 
     await User.findOneAndDelete({ email: resEmail });
+  });
+
+  test("POST /signin - Connexion d'un utilisateur et renvoie 200 avec un header x-auth-token", async () => {
+    const salt = await bcrypt.genSalt(10);
+    const passwordHashed = await bcrypt.hash("coucou", salt);
+
+    let user = new User({
+      username: "Jean",
+      email: "jean@test.com",
+      motdepasse: passwordHashed,
+    });
+    user = await user.save();
+
+    const res = await request(app)
+      .post("/signin")
+      .send({
+        email: user.email,
+        motdepasse: "coucou",
+      })
+      .expect(200)
+      .expect("content-type", /json/)
+      .expect("x-auth-token", /.+/);
+
+    const data = JSON.parse(res.text);
+    const resUsername = data.username;
+    expect(resUsername).toBe(user.username);
+
+    await User.findByIdAndDelete(user._id);
   });
 });
