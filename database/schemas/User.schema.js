@@ -9,7 +9,7 @@ module.exports.UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  password: {
+  motdepasse: {
     type: String,
     required: true,
   },

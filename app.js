@@ -56,7 +56,7 @@ app.post("/signup", async (req, res) => {
   const schema = joi.object({
     username: joi.string().min(3).max(50).required(),
     email: joi.string().max(255).required().email(),
-    password: joi.string().min(3).max(50).required(),
+    motdepasse: joi.string().min(3).max(50).required(),
   });
 
   const { value: account, error } = schema.validate(payload);
@@ -68,8 +68,8 @@ app.post("/signup", async (req, res) => {
 
   // Hachage du mot de passe
   const salt = await bcrypt.genSalt(10);
-  const passwordHashed = await bcrypt.hash(account.password, salt);
-  account.password = passwordHashed;
+  const passwordHashed = await bcrypt.hash(account.motdepasse, salt);
+  account.motdepasse = passwordHashed;
 
   // Création du nouvel utilisateur
   const newUser = new User(account);
