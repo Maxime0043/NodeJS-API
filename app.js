@@ -20,9 +20,9 @@ const verifyId = async (req, res, next) => {
 
   // Vérification
   if (ObjectID.isValid(id)) {
-    const user = await Tache.findById(id);
+    const tache = await Tache.findById(id);
 
-    if (user) next();
+    if (tache) next();
     else res.status(400).json({ error: "Id must exists !" });
   }
 
@@ -74,6 +74,32 @@ app.post("/api/taches", async (req, res) => {
 
     // Renvoie objet créé
     res.status(201).json(tache);
+  }
+});
+
+/**
+ * Mise à jour d'une tâche
+ */
+app.put("/api/taches/:id", [verifyId], async (req, res) => {
+  const id = req.params.id;
+  const payload = req.body;
+
+  // validation
+  const schema = joi.object({
+    description: joi.string().min(5).max(50),
+    faite: joi.boolean(),
+  });
+  const { value, error } = schema.validate(payload);
+
+  // Erreur => Renvoie erreur
+  if (error) {
+    res.status(400).json({ error: error.details[0].message });
+    return;
+  } else {
+    // Ajout valeur dans base de données
+    const tache = await Tache.findByIdAndUpdate(id, value);
+    // Renvoie objet créé
+    res.status(200).json(tache);
   }
 });
 
