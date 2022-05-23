@@ -1,6 +1,7 @@
 const request = require("supertest");
 const app = require("../app");
 const { Tache } = require("../database/models/Tache.model");
+const { User } = require("../database/models/User.model");
 
 describe("API CRUD /api/taches", () => {
   test("GET /api/taches - Retourne la liste des taches de la base de données", async () => {
@@ -116,5 +117,27 @@ describe("API CRUD /api/taches", () => {
       .delete("/api/taches/" + newTache._id)
       .expect(200)
       .expect("content-type", /json/);
+  });
+});
+
+describe("Comptes utilisateur", () => {
+  test("POST /signup - Inscription d'un utilisateur et renvoie 201", async () => {
+    const user = {
+      username: "Jean",
+      email: "jean@test.com",
+      motdepasse: "coucou",
+    };
+
+    const res = await request(app)
+      .post("/signup")
+      .send(user)
+      .expect(201)
+      .expect("content-type", /json/);
+
+    const data = JSON.parse(res.text);
+    const resEmail = data.email;
+    expect(resEmail).toBe(user.email);
+
+    await User.findOneAndDelete({ email: resEmail });
   });
 });
