@@ -28,6 +28,23 @@ const { User } = require("./database/models/User.model");
 // On va avoir besoin de parser le json entrant dans req.body
 app.use(express.json());
 
+const authGuard = (req, res, next) => {
+  const token = req.header("x-auth-token");
+  if (!token) {
+    return res.status(401).json({ error: "Vous devez vous connecter" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+    req.user = decoded;
+
+    // Le middleware a fait son boulot et peut laisser la place au suivant.
+    next();
+  } catch (err) {
+    return res.status(400).json({ error: "Token invalide" });
+  }
+};
+
 const verifyId = async (req, res, next) => {
   const params = req.params;
   let id = params.id;
@@ -133,7 +150,7 @@ app.get("/api/taches/:id", [verifyId], async (req, res) => {
 /**
  * Ajouter une tâche
  */
-app.post("/api/taches", async (req, res) => {
+app.post("/api/taches", [authGuard], async (req, res) => {
   const payload = req.body;
 
   // validation
@@ -160,7 +177,7 @@ app.post("/api/taches", async (req, res) => {
 /**
  * Mise à jour d'une tâche
  */
-app.put("/api/taches/:id", [verifyId], async (req, res) => {
+app.put("/api/taches/:id", [authGuard, verifyId], async (req, res) => {
   const id = req.params.id;
   const payload = req.body;
 
@@ -187,7 +204,7 @@ app.put("/api/taches/:id", [verifyId], async (req, res) => {
 /**
  * Suppression d'une tâche
  */
-app.delete("/api/taches/:id", [verifyId], async (req, res) => {
+app.delete("/api/taches/:id", [authGuard, verifyId], async (req, res) => {
   const id = req.params.id;
   const tache = await Tache.findByIdAndDelete(id);
 
