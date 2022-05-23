@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../app");
-const { Tache } = require("../Datatable");
+const { Tache } = require("../database/models/Tache.model");
 
 describe("API CRUD /api/taches", () => {
   test("GET /api/taches - Retourne la liste des taches de la base de données", async () => {
@@ -15,8 +15,14 @@ describe("API CRUD /api/taches", () => {
     expect(JSON.parse(res.text)).toMatchObject(taches);
   });
 
-  test("GET /api/taches/628b731ff7222c461f80e0fd - Retourne le détail de la tâche et renvoie 200", async () => {
-    const id = "628b731ff7222c461f80e0fd";
+  test("GET /api/taches/:id - Retourne le détail de la tâche et renvoie 200", async () => {
+    let newTache = new Tache({
+      description: "coucou",
+      faite: false,
+    });
+    newTache = await newTache.save();
+
+    const id = newTache._id;
 
     const res = await request(app)
       .get("/api/taches/" + id)
@@ -27,6 +33,8 @@ describe("API CRUD /api/taches", () => {
     // Exemple : _id: new ObjectID("identifiant") => _id: "identifiant"
     const tache = JSON.parse(JSON.stringify(await Tache.findById(id)));
     expect(JSON.parse(res.text)).toMatchObject(tache);
+
+    await Tache.findByIdAndRemove(id);
   });
 
   test("GET /api/taches/Z67D58Z67Q987D89 - Récupération d'une tâche innexistante et renvoie 400", async () => {
@@ -50,7 +58,10 @@ describe("API CRUD /api/taches", () => {
       .expect(201)
       .expect("content-type", /json/);
 
-    expect(JSON.parse(res.text)).toMatchObject(tache);
+    const data = JSON.parse(res.text);
+    expect(data).toMatchObject(tache);
+
+    await Tache.findByIdAndRemove(data._id);
   });
 
   test.each([
@@ -68,8 +79,15 @@ describe("API CRUD /api/taches", () => {
     }
   );
 
-  test("PUT /api/taches/628b731ff7222c461f80e0fd - Met à jour la tâche et renvoie 200", async () => {
-    const id = "628b731ff7222c461f80e0fd";
+  test("PUT /api/taches/:id - Met à jour la tâche et renvoie 200", async () => {
+    let newTache = new Tache({
+      description: "coucou",
+      faite: false,
+    });
+    newTache = await newTache.save();
+
+    const id = newTache._id;
+
     const tache = {
       description: "description test",
       faite: true,
@@ -83,11 +101,19 @@ describe("API CRUD /api/taches", () => {
 
     const updateTache = JSON.parse(JSON.stringify(await Tache.findById(id)));
     expect(JSON.parse(res.text)).toMatchObject(updateTache);
+
+    await Tache.findByIdAndDelete(id);
   });
 
-  test("DELETE /api/test/628b731ff7222c461f80e0fd - Supprime une tâche et renvoie 200", async () => {
+  test("DELETE /api/test/:id - Supprime une tâche et renvoie 200", async () => {
+    let newTache = new Tache({
+      description: "coucou",
+      faite: false,
+    });
+    newTache = await newTache.save();
+
     const res = await request(app)
-      .delete("/api/taches/628b731ff7222c461f80e0fd")
+      .delete("/api/taches/" + newTache._id)
       .expect(200)
       .expect("content-type", /json/);
   });

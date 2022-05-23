@@ -7,6 +7,7 @@ const express = require("express");
 const app = express();
 
 // Base de données
+require("./database/connection");
 const { Tache } = require("./database/models/Tache.model");
 
 // Middleware
@@ -97,7 +98,8 @@ app.put("/api/taches/:id", [verifyId], async (req, res) => {
     return;
   } else {
     // Ajout valeur dans base de données
-    const tache = await Tache.findByIdAndUpdate(id, value);
+    let tache = await Tache.findByIdAndUpdate(id, value);
+    tache = await Tache.findById(tache._id);
     // Renvoie objet créé
     res.status(200).json(tache);
   }
