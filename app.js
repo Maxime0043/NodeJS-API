@@ -21,6 +21,7 @@ if (!process.env.JWT_PRIVATE_KEY) {
 // Base de données
 require("./database/connection");
 const { Tache } = require("./database/models/Tache.model");
+const { User } = require("./database/models/User.model");
 
 // Middleware
 
