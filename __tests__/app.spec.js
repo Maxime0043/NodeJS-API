@@ -67,4 +67,21 @@ describe("API CRUD /api/taches", () => {
         .expect("content-type", /json/);
     }
   );
+
+  test("PUT /api/taches/628b731ff7222c461f80e0fd - Met à jour la tâche et renvoie 200", async () => {
+    const id = "628b731ff7222c461f80e0fd";
+    const tache = {
+      description: "description test",
+      faite: true,
+    };
+
+    const res = await request(app)
+      .put("/api/taches/" + id)
+      .send(tache)
+      .expect(200)
+      .expect("content-type", /json/);
+
+    const updateTache = JSON.parse(JSON.stringify(await Tache.findById(id)));
+    expect(JSON.parse(res.text)).toMatchObject(updateTache);
+  });
 });
