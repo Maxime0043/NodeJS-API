@@ -7,7 +7,7 @@ const express = require("express");
 const app = express();
 
 // Base de données
-const { Tache } = require("./Datatable");
+const { Tache } = require("./database/models/Tache.model");
 
 // Middleware
 
