@@ -84,4 +84,11 @@ describe("API CRUD /api/taches", () => {
     const updateTache = JSON.parse(JSON.stringify(await Tache.findById(id)));
     expect(JSON.parse(res.text)).toMatchObject(updateTache);
   });
+
+  test("DELETE /api/test/628b731ff7222c461f80e0fd - Supprime une tâche et renvoie 200", async () => {
+    const res = await request(app)
+      .delete("/api/taches/628b731ff7222c461f80e0fd")
+      .expect(200)
+      .expect("content-type", /json/);
+  });
 });
