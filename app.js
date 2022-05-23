@@ -63,6 +63,19 @@ const verifyId = async (req, res, next) => {
   }
 };
 
+const verifCreator = async (req, res, next) => {
+  const tacheId = req.params.id;
+  const creatorId = req.user.id;
+
+  const tache = await Tache.findById(tacheId);
+
+  if (tache.creeePar.toString() === creatorId) next();
+  else
+    res
+      .status(403)
+      .json({ error: "Vous n'êtes pas le créateur de la tâche !" });
+};
+
 // ROUTES
 
 /**
@@ -125,10 +138,7 @@ app.post("/signin", async (req, res) => {
 
   // On retourne un JWT
   const token = jwt.sign({ id: account._id }, process.env.JWT_PRIVATE_KEY);
-  res
-    .header("x-auth-token", token)
-    .status(200)
-    .json({ username: account.username });
+  res.header("x-auth-token", token).status(200).json({ email: account.email });
 });
 
 /**
@@ -165,6 +175,9 @@ app.post("/api/taches", [authGuard], async (req, res) => {
     res.status(400).json({ error: error.details[0].message });
     return;
   } else {
+    // Définit l'utilisateur qui crée la tâche
+    value.creeePar = req.user.id;
+
     // Ajout valeur dans base de données
     let tache = new Tache(value);
     tache = await tache.save();
@@ -204,11 +217,15 @@ app.put("/api/taches/:id", [authGuard, verifyId], async (req, res) => {
 /**
  * Suppression d'une tâche
  */
-app.delete("/api/taches/:id", [authGuard, verifyId], async (req, res) => {
-  const id = req.params.id;
-  const tache = await Tache.findByIdAndDelete(id);
+app.delete(
+  "/api/taches/:id",
+  [authGuard, verifyId, verifCreator],
+  async (req, res) => {
+    const id = req.params.id;
+    const tache = await Tache.findByIdAndDelete(id);
 
-  res.status(200).json(tache);
-});
+    res.status(200).json(tache);
+  }
+);
 
 module.exports = app;
